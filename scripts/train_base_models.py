@@ -1,27 +1,24 @@
-"""train base models and cache OOF + test predictions
-
-Run from the repo root:
-    uv run python -m scripts.train_base_models
-
-Artifacts (.npz) are the single source of truth for every later step:
-calibration, metrics, and plots all load these files instead of retraining.
 """
-from pathlib import Path
+train base models and cache OOF + test predictions
 
+artifacts (.npz) are the single source of truth for every later step:
+calibration, metrics, and plots all load these files instead of retraining
+"""
 import numpy as np
 
 from src.data import load_breast_cancer_dataset
 from src.models import make_logistic_regression, make_random_forest
-from src.oof import out_of_fold_predict
+from src.prediction import out_of_fold_predict
 
-artifacts_dir = "./artifacts"
+ARTIFACTS_DIR = "./artifacts/"
+
 
 def main() -> None:
     ds = load_breast_cancer_dataset()
 
     # cache frozen splits
     np.savez(
-        artifacts_dir / f"{ds.name}_split.npz",
+        ARTIFACTS_DIR + f"{ds.name}_split.npz",
         X_train=ds.X_train, X_test=ds.X_test,
         y_train=ds.y_train, y_test=ds.y_test,
     )
@@ -39,7 +36,7 @@ def main() -> None:
         test_proba = model.predict_proba(ds.X_test)[:, 1]
 
         np.savez(
-            artifacts_dir / f"{ds.name}_{model_name}.npz",
+            ARTIFACTS_DIR + f"{ds.name}_{model_name}.npz",
             oof_proba=oof_proba, test_proba=test_proba,
         )
 
