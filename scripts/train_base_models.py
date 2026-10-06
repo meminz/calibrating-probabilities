@@ -24,8 +24,8 @@ def main() -> None:
     )
 
     for model_name, model in [
-        ("logreg", make_logistic_regression()),
-        ("rf", make_random_forest()),
+        ("logreg", make_logistic_regression(max_iter=2000)),
+        ("rf", make_random_forest(n_estimators=1000)),
         # TODO add mlp
     ]:
         oof_proba = out_of_fold_predict(model, ds.X_train, ds.y_train)
@@ -42,7 +42,7 @@ def main() -> None:
 
         oof_acc = ((oof_proba >= 0.5).astype(int) == ds.y_train).mean()
         test_acc = ((test_proba >= 0.5).astype(int) == ds.y_test).mean()
-        print(f"{model_name}  OOF acc={oof_acc:.5f}   test acc={test_acc:.5f}")
+        print(f"\n{model_name}  OOF acc={oof_acc:.5f}   test acc={test_acc:.5f}")
 
 
 if __name__ == "__main__":
