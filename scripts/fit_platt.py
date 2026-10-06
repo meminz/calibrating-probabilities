@@ -26,9 +26,13 @@ def main() -> None:
         oof_proba, test_proba = d["oof_proba"], d["test_proba"]
 
         print(f"\n=== {model_name} ===")
+
         scaler = PlattScaler(lr=0.1, n_iter=2000, verbose=True)
         scaler.fit(oof_proba, y_train)
         print(f"  fitted: A={scaler.A_:.3f}  B={scaler.B_:.3f}")
+
+        print(f"  OOF log-loss   raw={log_loss(y_train, oof_proba):.4f}"
+              f"  platt={log_loss(y_train, scaler.predict(oof_proba)):.4f}")
 
         test_cal = scaler.predict(test_proba)
         print(f"  test log-loss  raw={log_loss(y_test, test_proba):.4f}"
