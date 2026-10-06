@@ -35,7 +35,7 @@ def train_base_models(ds: Dataset) -> None:
         print(f"{ds.name}/{model_name}: OOF acc={oof_acc:.3f}  test acc={test_acc:.3f}")
 
 
-def log_loss(y: np.ndarray, p: np.ndarray) -> float:
+def _log_loss(y: np.ndarray, p: np.ndarray) -> float:
     # TODO replace with actual metrics
     p = np.clip(p, 1e-15, 1 - 1e-15)
     return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
