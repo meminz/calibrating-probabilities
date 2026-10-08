@@ -29,7 +29,8 @@ def load_breast_cancer_dataset(seed: int = RANDOM_SEED, test_size: float = TEST_
     return Dataset("breast_cancer", X_train, X_test, y_train, y_test)
 
 def load_adult_subset(n: int = 4000, seed: int = RANDOM_SEED, test_size: float = TEST_SIZE) -> Dataset:
-    """adult income binarized to >50K vs <=50K
+    """
+    adult income binarized to >50K vs <=50K
 
     one-hot encoding on training set
     handle_unknown='ignore' lets the encoder survive categories that appear only in the test fold.
@@ -47,4 +48,6 @@ def load_adult_subset(n: int = 4000, seed: int = RANDOM_SEED, test_size: float =
     X_train = enc.fit_transform(X_train)
     X_test = enc.transform(X_test)
 
+    y_train = np.asarray(y_train)
+    y_test = np.asarray(y_test)
     return Dataset("adult", X_train, X_test, y_train, y_test)
