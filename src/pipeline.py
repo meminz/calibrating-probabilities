@@ -4,8 +4,13 @@ from src.data import Dataset
 from src.models import make_logistic_regression, make_random_forest
 from src.prediction import out_of_fold_predict
 from src.platt_scaling import PlattScaler
+from src.isotonic_regression import IsotonicCalibrator
 
 ARTIFACTS_DIR = "./artifacts/"
+MODELS = {
+    "logreg": make_logistic_regression(),
+    "rf": make_random_forest()
+}
 
 
 def train_base_models(ds: Dataset) -> None:
@@ -15,10 +20,8 @@ def train_base_models(ds: Dataset) -> None:
         y_train=ds.y_train, y_test=ds.y_test,
     )
 
-    for model_name, model in [
-        ("logreg", make_logistic_regression()),
-        ("rf", make_random_forest()),
-    ]:
+    print()
+    for model_name, model in MODELS.items():
         oof_proba = out_of_fold_predict(model, ds.X_train, ds.y_train)
         model.fit(ds.X_train, ds.y_train)
 
@@ -45,7 +48,7 @@ def fit_platt(ds: Dataset) -> None:
     split = np.load(ARTIFACTS_DIR + f"{ds.name}_split.npz")
     y_train, y_test = split["y_train"], split["y_test"]
 
-    for model_name in ["logreg", "rf"]:
+    for model_name in MODELS:
         d = np.load(ARTIFACTS_DIR + f"{ds.name}_{model_name}.npz")
         oof_proba, test_proba = d["oof_proba"], d["test_proba"]
 
@@ -53,13 +56,37 @@ def fit_platt(ds: Dataset) -> None:
         test_cal = scaler.predict(test_proba)
 
         print(f"{ds.name}/{model_name}: A={scaler.A_:.3f} B={scaler.B_:.3f} | "
-              f"OOF raw={log_loss(y_train, oof_proba):.4f} "
-              f"platt={log_loss(y_train, scaler.predict(oof_proba)):.4f} | "
-              f"test raw={log_loss(y_test, test_proba):.4f} "
-              f"platt={log_loss(y_test, test_cal):.4f}")
+              f"OOF raw={_log_loss(y_train, oof_proba):.4f} "
+              f"platt={_log_loss(y_train, scaler.predict(oof_proba)):.4f} | "
+              f"test raw={_log_loss(y_test, test_proba):.4f} "
+              f"platt={_log_loss(y_test, test_cal):.4f}")
 
         np.savez(
             ARTIFACTS_DIR + f"{ds.name}_{model_name}_platt.npz",
             oof_calibrated=scaler.predict(oof_proba),
+            test_calibrated=test_cal,
+        )
+
+def fit_isotonic(ds: Dataset) -> None:
+    split = np.load(ARTIFACTS_DIR + f"{ds.name}_split.npz")
+    y_train, y_test = split["y_train"], split["y_test"]
+
+    for model_name in MODELS:
+        d = np.load(ARTIFACTS_DIR + f"{ds.name}_{model_name}.npz")
+        oof_proba, test_proba = d["oof_proba"], d["test_proba"]
+
+        iso = IsotonicCalibrator().fit(oof_proba, y_train)
+        test_cal = iso.predict(test_proba)
+
+        print(f"{ds.name}/{model_name} [iso]: "
+              f"{len(iso.block_values_)} blocks | "
+              f"OOF raw={_log_loss(y_train, oof_proba):.4f} "
+              f"iso={_log_loss(y_train, iso.predict(oof_proba)):.4f} | "
+              f"test raw={_log_loss(y_test, test_proba):.4f} "
+              f"iso={_log_loss(y_test, test_cal):.4f}")
+
+        np.savez(
+            ARTIFACTS_DIR + f"{ds.name}_{model_name}_isotonic.npz",
+            oof_calibrated=iso.predict(oof_proba),
             test_calibrated=test_cal,
         )
