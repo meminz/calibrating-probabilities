@@ -5,6 +5,7 @@ from src.models import make_logistic_regression, make_random_forest
 from src.prediction import out_of_fold_predict
 from src.platt_scaling import PlattScaler
 from src.isotonic_regression import IsotonicCalibrator
+from src.metrics import log_loss, brier_score, accuracy
 
 ARTIFACTS_DIR = "./artifacts/"
 MODELS = {
@@ -32,16 +33,10 @@ def train_base_models(ds: Dataset) -> None:
             oof_proba=oof_proba, test_proba=test_proba,
         )
 
-        oof_acc = ((oof_proba >= 0.5).astype(int) == ds.y_train).mean()
-        test_acc = ((test_proba >= 0.5).astype(int) == ds.y_test).mean()
+        oof_acc = accuracy(ds.y_train, oof_proba)
+        test_acc = accuracy(ds.y_test, test_proba)
 
         print(f"{ds.name}/{model_name}: OOF acc={oof_acc:.3f}  test acc={test_acc:.3f}")
-
-
-def _log_loss(y: np.ndarray, p: np.ndarray) -> float:
-    # TODO replace with actual metrics
-    p = np.clip(p, 1e-15, 1 - 1e-15)
-    return float(-np.mean(y * np.log(p) + (1 - y) * np.log(1 - p)))
 
 
 def fit_platt(ds: Dataset) -> None:
@@ -56,10 +51,11 @@ def fit_platt(ds: Dataset) -> None:
         test_cal = scaler.predict(test_proba)
 
         print(f"{ds.name}/{model_name}: A={scaler.A_:.3f} B={scaler.B_:.3f} | "
-              f"OOF raw={_log_loss(y_train, oof_proba):.4f} "
-              f"platt={_log_loss(y_train, scaler.predict(oof_proba)):.4f} | "
-              f"test raw={_log_loss(y_test, test_proba):.4f} "
-              f"platt={_log_loss(y_test, test_cal):.4f}")
+              f"OOF log loss = {log_loss(y_train, oof_proba):.4f} "
+              f"platt={log_loss(y_train, scaler.predict(oof_proba)):.4f} | "
+              f"test raw={log_loss(y_test, test_proba):.4f} | "
+              f"platt={log_loss(y_test, test_cal):.4f} | "
+              f"test brier raw {brier_score(y_test, test_proba)}")
 
         np.savez(
             ARTIFACTS_DIR + f"{ds.name}_{model_name}_platt.npz",
@@ -77,13 +73,15 @@ def fit_isotonic(ds: Dataset) -> None:
 
         iso = IsotonicCalibrator().fit(oof_proba, y_train)
         test_cal = iso.predict(test_proba)
+        test_cal_clip = iso.predict(test_proba, clip=1e-3)
 
-        print(f"{ds.name}/{model_name} [iso]: "
-              f"{len(iso.block_values_)} blocks | "
-              f"OOF raw={_log_loss(y_train, oof_proba):.4f} "
-              f"iso={_log_loss(y_train, iso.predict(oof_proba)):.4f} | "
-              f"test raw={_log_loss(y_test, test_proba):.4f} "
-              f"iso={_log_loss(y_test, test_cal):.4f}")
+        print(f"{ds.name}/{model_name} [iso]: {len(iso.block_values_)} blocks | "
+              f"OOF log loss {log_loss(y_train, oof_proba):.4f}->{log_loss(y_train, iso.predict(oof_proba)):.4f} | "
+              f"test log loss {log_loss(y_test, test_proba):.4f}->{log_loss(y_test, test_cal):.4f}"
+              f" (clip {log_loss(y_test, test_cal_clip):.4f}) | "
+              f"test brier raw {brier_score(y_test, test_proba):.4f} | "
+              f"iso {brier_score(y_test, test_cal):.4f} | "
+              f"(clip {brier_score(y_test, test_cal_clip):.4f})")
 
         np.savez(
             ARTIFACTS_DIR + f"{ds.name}_{model_name}_isotonic.npz",
