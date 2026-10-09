@@ -7,7 +7,16 @@ ARTIFACTS_DIR = Path("./artifacts/")
 FIGURES = Path("report/figures")
 
 
-def reliability_points(p: np.ndarray, y: np.ndarray, n_bins: int = 10):
+from typing import NamedTuple
+
+# easier marshalling
+class ReliabilityCurve(NamedTuple):
+    mean_pred: np.ndarray
+    freq: np.ndarray
+    ci: np.ndarray
+    counts: np.ndarray
+
+def reliability_points(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -> ReliabilityCurve:
     """
     equal-width bins over [0, 1].
 
@@ -26,16 +35,19 @@ def reliability_points(p: np.ndarray, y: np.ndarray, n_bins: int = 10):
         mask = assignments == b
         n_b = int(mask.sum())
         counts.append(n_b)
+
         if n_b == 0:
             mean_pred.append(np.nan)
             freq.append(np.nan)
             ci.append(np.nan)
+
         else:
             f = float(y[mask].mean())
             mean_pred.append(float(p[mask].mean()))
             freq.append(f)
             ci.append(Z_95 * np.sqrt(f * (1.0 - f) / n_b))
-    return np.array(mean_pred), np.array(freq), np.array(ci), np.array(counts)
+
+    return ReliabilityCurve(np.array(mean_pred), np.array(freq), np.array(ci), np.array(counts))
 
 
 def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -> float:
@@ -48,10 +60,15 @@ def plot_reliability(dataset_name, model_name, curves, n_bins, out_path):
     fig, ax = plt.subplots(figsize=(5.2, 5))
     ax.plot([0, 1], [0, 1], "--", color="gray", linewidth=1, label="perfect")
 
-    for label, mean_pred, freq, ci in curves:
-        ok = ~np.isnan(mean_pred)
-        ax.errorbar(mean_pred[ok], freq[ok], yerr=ci[ok], marker="o",
-                    markersize=4, capsize=3, linewidth=1.2, label=label)
+    for label, curve in curves:
+        ok = ~np.isnan(curve.mean_pred)
+        sizes = 15 + 70 * np.sqrt(curve.counts[ok] / curve.counts[ok].max())
+
+        ax.errorbar(curve.mean_pred[ok], curve.freq[ok], yerr=curve.ci[ok],
+                    # marker="o", markersize=4, capsize=3, linewidth=1.2, label=label)
+                    fmt='none', capsize=3, linewidth=1.2)
+        ax.scatter(curve.mean_pred[ok], curve.freq[ok], s=sizes,
+                   linewidth=0.8, edgecolor='black', zorder=3, label=label)
 
     ax.set_xlabel("mean predicted probability")
     ax.set_ylabel("empirical frequency")
@@ -77,10 +94,10 @@ def plot_all_diagrams(datasets, n_bins: int = 10) -> None:
             pl = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_platt.npz")
             iso = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_isotonic.npz")
             curves = [
-                ("raw", *reliability_points(d["test_proba"], y_test, n_bins)),
-                ("platt", *reliability_points(pl["test_calibrated"], y_test, n_bins)),
-                ("isotonic", *reliability_points(iso["test_calibrated"], y_test, n_bins)),
-                ("iso+clip", *reliability_points(iso["test_calibrated_clipped"], y_test, n_bins)),
+                ("raw", reliability_points(d["test_proba"], y_test, n_bins)),
+                ("platt", reliability_points(pl["test_calibrated"], y_test, n_bins)),
+                ("isotonic", reliability_points(iso["test_calibrated"], y_test, n_bins)),
+                ("iso+clip", reliability_points(iso["test_calibrated_clipped"], y_test, n_bins)),
             ]
             plot_reliability(ds.name, model_name, curves, n_bins,
                              FIGURES / f"{ds.name}_{model_name}_reliability.png")
