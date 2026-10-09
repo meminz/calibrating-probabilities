@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from src.data import load_adult_subset, load_breast_cancer_dataset
+from src.data import load_adult, load_breast_cancer_dataset
 from src.diagrams import plot_all_diagrams
 from src.pipeline import compute_metrics, fit_isotonic, fit_platt, print_ece_sensitivity, print_tables, train_base_models
 
@@ -22,9 +22,9 @@ def main() -> None:
             fit_isotonic(ds)
 
     rows = compute_metrics(DATASETS) # load from artifacts dir
-    print_tables(rows)
+    # print_tables(rows)
+    # print_ece_sensitivity(DATASETS)
     plot_all_diagrams(DATASETS)
-    print_ece_sensitivity(DATASETS)
 
 
 if __name__ == "__main__":
