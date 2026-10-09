@@ -1,5 +1,6 @@
 from src.data import load_adult_subset, load_breast_cancer_dataset
-from src.pipeline import compute_metrics, fit_isotonic, fit_platt, print_tables, train_base_models
+from src.diagrams import plot_all_diagrams
+from src.pipeline import compute_metrics, fit_isotonic, fit_platt, print_ece_sensitivity, print_tables, train_base_models
 
 DATASETS = [
         load_breast_cancer_dataset(),
@@ -14,6 +15,8 @@ def main() -> None:
 
     rows = compute_metrics(DATASETS) # load from artifacts dir
     print_tables(rows)
+    plot_all_diagrams(DATASETS)
+    print_ece_sensitivity(DATASETS)
 
 
 if __name__ == "__main__":
