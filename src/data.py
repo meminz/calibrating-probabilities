@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 import numpy as np
-from sklearn.datasets import load_breast_cancer, fetch_openml
+from sklearn.datasets import fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 
@@ -18,16 +18,16 @@ class Dataset:
     y_train: np.ndarray
     y_test: np.ndarray
 
+def load_spambase(seed: int = RANDOM_SEED, test_size: float = TEST_SIZE) -> Dataset:
+    frame = fetch_openml("spambase", version=1, as_frame=True).frame
+    y = (frame["class"].astype(str) == "1").astype(int)  # check .unique() once
+    X = frame.drop(columns="class").to_numpy()
 
-def load_breast_cancer_dataset(seed: int = RANDOM_SEED, test_size: float = TEST_SIZE) -> Dataset:
-    bunch = load_breast_cancer()
-    X, y = bunch.data, bunch.target
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=test_size, random_state=seed, stratify=y)
 
-    # label flip so 1 is malignant (malignancy risk score)
-    y = (y == 0).astype(int)
-    X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=test_size, random_state=seed, stratify=y )
-
-    return Dataset("breast_cancer", X_train, X_test, y_train, y_test)
+    return Dataset("spambase", X_train, X_test,
+                   np.asarray(y_train), np.asarray(y_test))
 
 def load_adult(n: int = None, seed: int = RANDOM_SEED, test_size: float = TEST_SIZE) -> Dataset:
     """
@@ -50,9 +50,6 @@ def load_adult(n: int = None, seed: int = RANDOM_SEED, test_size: float = TEST_S
         name = "adult"
 
     X_train, X_test, y_train, y_test = train_test_split( X_all, y_all, test_size=test_size, random_state=seed, stratify=y_all )
-
-
-
 
     enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
     X_train = enc.fit_transform(X_train)

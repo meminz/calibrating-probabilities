@@ -1,12 +1,12 @@
 from argparse import ArgumentParser
 
-from src.data import load_adult, load_breast_cancer_dataset
+from src.data import load_adult, load_spambase
 from src.diagrams import plot_all_diagrams
 from src.pipeline import compute_metrics, fit_isotonic, fit_platt, print_ece_sensitivity, print_tables, train_base_models
 
 DATASETS = [
-        load_breast_cancer_dataset(),
-        load_adult(n=4000),
+        load_spambase(),
+        # load_adult(n=4000),
         load_adult(),
 ]
 
