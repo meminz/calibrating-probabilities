@@ -55,49 +55,62 @@ def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -
     return float(np.nansum(counts * np.abs(freq - mean_pred)) / counts.sum())
 
 
-def plot_reliability(dataset_name, model_name, curves, n_bins, out_path):
-    """curves: list of (label, mean_pred, freq, ci). Pure formatting."""
-    fig, ax = plt.subplots(figsize=(5.2, 5))
-    ax.plot([0, 1], [0, 1], "--", color="gray", linewidth=1, label="perfect")
-
-    for label, curve in curves:
-        ok = ~np.isnan(curve.mean_pred)
-        sizes = 15 + 70 * np.sqrt(curve.counts[ok] / curve.counts[ok].max())
-
-        ax.errorbar(curve.mean_pred[ok], curve.freq[ok], yerr=curve.ci[ok],
-                    # marker="o", markersize=4, capsize=3, linewidth=1.2, label=label)
-                    fmt='none', capsize=3, linewidth=1.2)
-        ax.scatter(curve.mean_pred[ok], curve.freq[ok], s=sizes,
-                   linewidth=0.8, edgecolor='black', zorder=3, label=label)
-
-    ax.set_xlabel("mean predicted probability")
-    ax.set_ylabel("empirical frequency")
-    ax.set_title(f"{dataset_name} / {model_name} (M={n_bins})")
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.legend(loc="upper left", fontsize=8)
-
-    fig.tight_layout()
-    fig.savefig(out_path, dpi=150)
-
-    plt.close(fig)
-
 
 def plot_all_diagrams(datasets, n_bins: int = 10) -> None:
     FIGURES.mkdir(exist_ok=True)
+    variants = ["raw", "platt", "isotonic", "iso+clip"]
+    models = ["logreg", "rf"]
 
     for ds in datasets:
         y_test = np.load(ARTIFACTS_DIR / f"{ds.name}_split.npz")["y_test"]
 
-        for model_name in ["logreg", "rf"]:
+        fig, axes = plt.subplots(
+            len(models), len(variants),
+            figsize=(3.4 * len(variants), 3.4 * len(models)),
+            sharex=True, sharey=True)
+
+        for row, model_name in enumerate(models):
             d = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}.npz")
             pl = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_platt.npz")
             iso = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_isotonic.npz")
-            curves = [
-                ("raw", reliability_points(d["test_proba"], y_test, n_bins)),
-                ("platt", reliability_points(pl["test_calibrated"], y_test, n_bins)),
-                ("isotonic", reliability_points(iso["test_calibrated"], y_test, n_bins)),
-                ("iso+clip", reliability_points(iso["test_calibrated_clipped"], y_test, n_bins)),
-            ]
-            plot_reliability(ds.name, model_name, curves, n_bins,
-                             FIGURES / f"{ds.name}_{model_name}_reliability.png")
+
+            probs = {
+                "raw":      d["test_proba"],
+                "platt":    pl["test_calibrated"],
+                "isotonic": iso["test_calibrated"],
+                "iso+clip": iso["test_calibrated_clipped"],
+            }
+
+            for col, vname in enumerate(variants):
+                ax = axes[row, col]
+                ax.plot([0, 1], [0, 1], "--", color="gray", linewidth=1)
+
+                curve = reliability_points(probs[vname], y_test, n_bins)
+                ok = ~np.isnan(curve.mean_pred)
+
+                y_lo = np.minimum(curve.ci[ok], curve.freq[ok])
+                y_hi = np.minimum(curve.ci[ok], 1.0 - curve.freq[ok])
+
+                sizes = 15 + 70 * np.sqrt(curve.counts[ok] / curve.counts[ok].max())
+
+                ax.errorbar(curve.mean_pred[ok], curve.freq[ok], yerr=[y_lo, y_hi],
+                            fmt="none", capsize=2, linewidth=1, color="C0")
+                ax.scatter(curve.mean_pred[ok], curve.freq[ok], s=sizes,
+                           color="C0", edgecolor="black", linewidth=0.7, zorder=3)
+
+                ax.set_xlim(0, 1)
+                ax.set_ylim(-0.03, 1.03)
+
+                if row == 0:
+                    ax.set_title(vname.title(), fontsize=10)
+
+                if col == 0:
+                    ax.set_ylabel(f"{model_name.upper()}\nEmpirical Frequency", fontsize=9)
+
+                if row == len(models) - 1:
+                    ax.set_xlabel("Mean Predicted Probability", fontsize=9)
+
+        fig.suptitle(f"{ds.name.replace("_", " ").title()} (M={n_bins})")
+        fig.tight_layout()
+        fig.savefig(FIGURES / f"{ds.name}_reliability.png", dpi=300)
+        plt.close(fig)
