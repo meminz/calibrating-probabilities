@@ -4,7 +4,7 @@ import csv
 
 from src.data import Dataset
 from src.models import make_logistic_regression, make_random_forest
-from src.prediction import out_of_fold_predict
+from src.oof import out_of_fold_predict
 from src.platt_scaling import PlattScaler
 from src.isotonic_regression import IsotonicCalibrator
 from src.metrics import log_loss, brier_score, accuracy
@@ -132,3 +132,23 @@ def print_tables(rows: list[dict]) -> None:
                 print(f"{r['variant']:9s} {r['acc_oof']:7.3f} {r['acc_test']:8.3f} "
                       f"{r['ll_oof']:7.4f} {r['ll_test']:7.4f} "
                       f"{r['brier_oof']:7.4f} {r['brier_test']:7.4f}")
+
+
+def print_ece_sensitivity(datasets, bin_counts=(10, 20)) -> None:
+    print("\nECE (test) -- bin-count sensitivity")
+
+    for ds in datasets:
+        y_test = np.load(ARTIFACTS_DIR / f"{ds.name}_split.npz")["y_test"]
+
+        for model_name in ["logreg", "rf"]:
+            d = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}.npz")
+            iso = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_isotonic.npz")
+
+            variants = [("raw", d["test_proba"]),
+                        ("iso+clip", iso["test_calibrated_clipped"])]
+
+            for vname, arr in variants:
+                eces = "  ".join(f"M={m}: {expected_calibration_error(arr, y_test, m):.4f}"
+                                 for m in bin_counts)
+
+                print(f"  {ds.name}/{model_name} [{vname}]  {eces}")
