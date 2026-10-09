@@ -6,7 +6,8 @@ from src.pipeline import compute_metrics, fit_isotonic, fit_platt, print_ece_sen
 
 DATASETS = [
         load_breast_cancer_dataset(),
-        load_adult_subset()
+        load_adult(n=4000),
+        load_adult(),
 ]
 
 def main() -> None:
