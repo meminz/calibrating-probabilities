@@ -25,8 +25,7 @@ def _log_sigmoid(z: np.ndarray) -> np.ndarray:
 class PlattScaler:
     """fit A, B of sigmoid(A*s + B) on (scores, labels) via gradient descent"""
 
-    def __init__(self, lr: float = 0.1, n_iter: int = 2000,
-                 l2: float = 1e-3, verbose: bool = False):
+    def __init__(self, lr: float = 0.1, n_iter: int = 2000, l2: float = 1e-3, verbose: bool = False):
         self.lr = lr
         self.n_iter = n_iter
         self.l2 = l2 # ridge penalty, Platt's paper used a prior too

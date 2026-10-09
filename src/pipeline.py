@@ -3,6 +3,7 @@ import numpy as np
 import csv
 
 from src.data import Dataset
+from src.diagrams import expected_calibration_error
 from src.models import make_logistic_regression, make_random_forest
 from src.oof import out_of_fold_predict
 from src.platt_scaling import PlattScaler
@@ -152,3 +153,6 @@ def print_ece_sensitivity(datasets, bin_counts=(10, 20)) -> None:
                                  for m in bin_counts)
 
                 print(f"  {ds.name}/{model_name} [{vname}]  {eces}")
+                print(f"  {ds.name}/{model_name} [{vname}]  distinct={len(np.unique(arr))}  {eces}")
+
+            print()
