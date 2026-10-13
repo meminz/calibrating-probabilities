@@ -59,7 +59,7 @@ def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -
 def plot_all_diagrams(datasets) -> None:
     FIGURES.mkdir(exist_ok=True)
     variants = ["raw", "platt", "isotonic", "iso+clip"]
-    models = ["logreg", "rf"]
+    models = ["logreg", "rf", "mlp"]
 
     for ds in datasets:
         y_test = np.load(ARTIFACTS_DIR / f"{ds.name}_split.npz")["y_test"]
