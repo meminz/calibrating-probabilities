@@ -1,13 +1,13 @@
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
+from typing import NamedTuple
 
-Z_95 = 1.96  # normal-approximation 95% CI
 ARTIFACTS_DIR = Path("./artifacts/")
 FIGURES = Path("report/figures")
 
+Z_95 = 1.96  # 95% CI
 
-from typing import NamedTuple
 
 # easier marshalling
 class ReliabilityCurve(NamedTuple):

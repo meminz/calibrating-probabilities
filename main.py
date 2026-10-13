@@ -1,9 +1,10 @@
 from argparse import ArgumentParser
 
 from src.data import load_adult, load_spambase
-from src.diagrams import plot_all_diagrams
-from src.pipeline import compute_metrics, fit_isotonic, fit_platt, train_base_models
-from src.prints import print_calibrator_params, print_ece_sensitivity, print_tables
+from src.metrics import compute_metrics
+from src.pipeline import fit_isotonic, fit_platt, train_base_models
+from src.report import (plot_all_diagrams, print_calibrator_params,
+                        print_ece_sensitivity, print_tables)
 
 DATASETS = [
         load_spambase(),

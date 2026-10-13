@@ -1,7 +1,7 @@
 from pathlib import Path
 import numpy as np
 
-from src.diagrams import expected_calibration_error
+from .diagrams import expected_calibration_error
 
 ARTIFACTS_DIR = Path("./artifacts/")
 MODELS = {
