@@ -5,6 +5,7 @@ from src.metrics import compute_metrics
 from src.pipeline import fit_isotonic, fit_platt, train_base_models
 from src.report import (plot_all_diagrams, print_calibrator_params,
                         print_ece_sensitivity, print_tables)
+from src.report.latex import export_params_latex, export_results_latex
 
 DATASETS = [
         load_spambase(),
@@ -29,6 +30,9 @@ def main() -> None:
     print_tables(rows)
     print_calibrator_params(DATASETS)
     print_ece_sensitivity(DATASETS)
+
+    export_results_latex(rows)
+    export_params_latex(DATASETS)
 
     plot_all_diagrams(DATASETS)
 
