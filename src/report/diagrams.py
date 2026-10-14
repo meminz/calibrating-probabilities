@@ -1,10 +1,9 @@
 from pathlib import Path
-import numpy as np
-import matplotlib.pyplot as plt
 from typing import NamedTuple
+import matplotlib.pyplot as plt
+import numpy as np
 
-ARTIFACTS_DIR = Path("./artifacts/")
-FIGURES = Path("report/figures")
+from src.constants import ARTIFACTS_DIR, FIGURES_DIR
 
 Z_95 = 1.96  # 95% CI
 
@@ -57,7 +56,7 @@ def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -
 
 
 def plot_all_diagrams(datasets) -> None:
-    FIGURES.mkdir(exist_ok=True)
+    FIGURES_DIR.mkdir(exist_ok=True, parents=True)
     variants = ["raw", "platt", "isotonic", "iso+clip"]
     models = ["logreg", "rf", "mlp"]
 
@@ -113,5 +112,5 @@ def plot_all_diagrams(datasets) -> None:
 
         fig.suptitle(f"{ds.name.replace("_", " ").title()} (M={n_bins})")
         fig.tight_layout()
-        fig.savefig(FIGURES / f"{ds.name}_reliability.png", dpi=300)
+        fig.savefig(FIGURES_DIR / f"{ds.name}_reliability.png", dpi=300)
         plt.close(fig)

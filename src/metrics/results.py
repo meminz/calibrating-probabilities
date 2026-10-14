@@ -3,15 +3,8 @@ import csv
 
 import numpy as np
 
+from src.constants import ARTIFACTS_DIR, MODELS
 from .scores import accuracy, brier_score, log_loss
-
-ARTIFACTS_DIR = Path("./artifacts/")
-MODELS = {
-    "logreg",
-    "rf",
-    "mlp",
-}
-
 
 def compute_metrics(datasets, csv_path=ARTIFACTS_DIR / "results.csv") -> list[dict]:
     rows = []

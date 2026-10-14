@@ -1,14 +1,10 @@
 from pathlib import Path
+
 import numpy as np
 
+from src.constants import ARTIFACTS_DIR, MODELS
 from .diagrams import expected_calibration_error
 
-ARTIFACTS_DIR = Path("./artifacts/")
-MODELS = {
-    "logreg",
-    "rf",
-    "mlp",
-}
 
 def print_tables(rows: list[dict]) -> None:
     # TODO replace with latex exporter

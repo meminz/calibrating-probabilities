@@ -3,16 +3,9 @@ from pathlib import Path
 import numpy as np
 
 from .calibration import IsotonicCalibrator, PlattScaler, out_of_fold_predict
+from .constants import ARTIFACTS_DIR, MODELS
 from .data import Dataset
-from .metrics import accuracy, brier_score, log_loss
-from .models import make_logistic_regression, make_mlp, make_random_forest
-
-ARTIFACTS_DIR = Path("./artifacts/")
-MODELS = {
-    "logreg": make_logistic_regression(),
-    "rf": make_random_forest(),
-    "mlp": make_mlp(),
-}
+from .metrics.scores import accuracy, brier_score, log_loss
 
 CLIP_ISO = 1e-3
 
