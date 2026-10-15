@@ -9,7 +9,7 @@ from src.report.latex import export_params_latex, export_results_latex
 
 DATASETS = [
         load_spambase(),
-        # load_adult(n=4000),
+        load_adult(n=4000),
         load_adult(),
 ]
 

@@ -7,7 +7,6 @@ from .diagrams import expected_calibration_error
 
 
 def print_tables(rows: list[dict]) -> None:
-    # TODO replace with latex exporter
     header = (f"{'model':9s} {'variant':9s} {'acc_oof':>7s} {'acc_test':>8s} "
               f"{'ll_oof':>7s} {'ll_test':>7s} {'br_oof':>7s} {'br_test':>7s}")
 
