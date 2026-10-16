@@ -1,4 +1,4 @@
-from argparse import ArgumentParser, BooleanOptionalAction
+from argparse import ArgumentParser
 
 from src.data import load_adult, load_spambase
 from src.metrics import compute_metrics
@@ -17,8 +17,8 @@ def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("-f", "--force-recompute", action='store_true', help="recompute training and fitting, skip artifacts presence check")
     parser.add_argument("-s", "--skip-training", action='store_true', help="reuse existing artifacts, skip training and fitting")
-    parser.add_argument("-p", "--plot", action=BooleanOptionalAction, default=True, help="generate reliability diagrams (default: on)")
-    parser.add_argument("-l", "--latex", action=BooleanOptionalAction, default=True, help="export LaTeX tables (default: on)")
+    parser.add_argument("--no-plot", dest="plot", action="store_false", help="skip reliability diagrams (default: on)")
+    parser.add_argument("--no-latex", dest="latex", action="store_false", help="skip LaTeX table export (default: on)")
     args = parser.parse_args()
 
     if not args.skip_training:
