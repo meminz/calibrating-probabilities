@@ -1,6 +1,9 @@
 __pycache__
 artifacts/
-*.txt
 *.log
+
+# report
 *.png
+*.txt
 *.tex
+*.bib
