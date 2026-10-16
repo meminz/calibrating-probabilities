@@ -16,16 +16,14 @@ DATASETS = [
 def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("-f", "--force-recompute", action='store_true', help="recompute training and fitting, skip artifacts presence check")
-    parser.add_argument("-s", "--skip-training", action='store_true', help="reuse existing artifacts, skip training and fitting")
     parser.add_argument("--no-plot", dest="plot", action="store_false", help="skip reliability diagrams (default: on)")
     parser.add_argument("--no-latex", dest="latex", action="store_false", help="skip LaTeX table export (default: on)")
     args = parser.parse_args()
 
-    if not args.skip_training:
-        for ds in DATASETS:
-            train_base_models(ds, args.force_recompute)
-            fit_platt(ds, args.force_recompute)
-            fit_isotonic(ds, args.force_recompute)
+    for ds in DATASETS:
+        train_base_models(ds, args.force_recompute)
+        fit_platt(ds, args.force_recompute)
+        fit_isotonic(ds, args.force_recompute)
 
     rows = compute_metrics(DATASETS) # load from artifacts dir
 

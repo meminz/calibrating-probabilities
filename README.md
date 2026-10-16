@@ -54,16 +54,15 @@ uv run main.py
 # recompute everything from scratch (ignore existing artifacts)
 uv run main.py --force-recompute
 
-# reuse existing artifacts (skip training and fitting)
-uv run main.py --skip-training
-
 # fast iteration: tables only, no figures, no LaTeX export
-uv run main.py --skip-training --no-plot --no-latex
+uv run main.py --no-plot --no-latex
 
 # any output step can be toggled individually
 uv run main.py --no-latex
 uv run main.py --no-plot
 ```
+
+Existing artifacts are reused automatically on rerun - only missing ones are recomputed. Pass `--force-recompute` to retrain and refit everything.
 
 Alternative without uv: `source .venv/bin/activate`, then run `python main.py ...` as below.
 
