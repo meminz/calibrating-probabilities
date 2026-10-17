@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.constants import ARTIFACTS_DIR, FIGURES_DIR
+from src.metrics.scores import expected_calibration_error
 
 Z_95 = 1.96  # 95% CI
 
@@ -47,12 +48,6 @@ def reliability_points(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -> Reliab
             ci.append(Z_95 * np.sqrt(f * (1.0 - f) / n_b))
 
     return ReliabilityCurve(np.array(mean_pred), np.array(freq), np.array(ci), np.array(counts))
-
-
-def expected_calibration_error(p: np.ndarray, y: np.ndarray, n_bins: int = 10) -> float:
-    mean_pred, freq, _, counts = reliability_points(p, y, n_bins)
-    return float(np.nansum(counts * np.abs(freq - mean_pred)) / counts.sum())
-
 
 
 def plot_all_diagrams(datasets) -> None:

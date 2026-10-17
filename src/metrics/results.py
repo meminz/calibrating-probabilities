@@ -4,7 +4,7 @@ import csv
 import numpy as np
 
 from src.constants import ARTIFACTS_DIR, MODELS
-from .scores import accuracy, brier_score, log_loss
+from .scores import accuracy, brier_score, expected_calibration_error, log_loss
 
 def compute_metrics(datasets, csv_path=ARTIFACTS_DIR / "results.csv") -> list[dict]:
     rows = []
@@ -38,6 +38,7 @@ def compute_metrics(datasets, csv_path=ARTIFACTS_DIR / "results.csv") -> list[di
                     "ll_test": log_loss(y_test, test_v),
                     "brier_oof": brier_score(y_train, oof_v),
                     "brier_test": brier_score(y_test, test_v),
+                    "ece": expected_calibration_error(test_v, y_test),
                 })
 
     # csv export

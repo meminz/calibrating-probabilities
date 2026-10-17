@@ -40,12 +40,13 @@ def export_results_latex(rows: list[dict], out_dir: Path = REPORT_TABLES) -> Non
         "\\centering\n"
         "\\small\\sffamily\n"
         "\\setlength{\\tabcolsep}{8pt}\n"
-        "\\begin{tabular}{ll *{6}{c}}\n"
+        "\\begin{tabular}{ll *{7}{c}}\n"
         "\\toprule\n"
         "\\textbf{Model} & \\textbf{Variant} & "
         "\\multicolumn{2}{c}{\\textbf{Accuracy}} & "
         "\\multicolumn{2}{c}{\\textbf{Log-Loss}} & "
-        "\\multicolumn{2}{c}{\\textbf{Brier Score}} \\\\\n"
+        "\\multicolumn{2}{c}{\\textbf{Brier Score}} & "
+        "\\textbf{ECE} \\\\\n"
         "\\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){7-8}\n"
         "& & OOF & Test & OOF & Test & OOF & Test \\\\\n"
         "\\midrule\n"
@@ -78,7 +79,8 @@ def export_results_latex(rows: list[dict], out_dir: Path = REPORT_TABLES) -> Non
                 f"{model_cell} & {variant_pretty} & "
                 f"{r['acc_oof']:.3f} & {r['acc_test']:.3f} & "
                 f"{r['ll_oof']:.4f} & {r['ll_test']:.4f} & "
-                f"{r['brier_oof']:.4f} & {r['brier_test']:.4f} \\\\"
+                f"{r['brier_oof']:.4f} & {r['brier_test']:.4f} & "
+                f"{r['ece']:.4f} \\\\"
             )
 
         lines.append("\\bottomrule\n\\end{tabular}")

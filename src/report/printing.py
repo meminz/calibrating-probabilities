@@ -49,5 +49,5 @@ def print_calibrator_params(datasets) -> None:
             pl = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_platt.npz")
             iso = np.load(ARTIFACTS_DIR / f"{ds.name}_{model_name}_isotonic.npz")
 
-            print(f"  {ds.name}/{model_name}: platt A={pl['A']:.3f} B={pl['B']:.3f}"
+            print(f"  {ds.name}/{model_name}: platt A={pl['A']:.4f} B={pl['B']:.4f}"
                   f"  | iso blocks={int(iso['n_blocks'])}")
